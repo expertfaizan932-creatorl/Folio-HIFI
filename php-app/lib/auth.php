@@ -51,9 +51,15 @@ function employee_avg_salary(): float {
     return (float) (val('SELECT AVG(salary) FROM employees') ?? 0);
 }
 
-/** The owner role. Sits above ADMIN and is deliberately never tracked. */
+/**
+ * LOCKED IN THIS BUILD: the owner / SUPER_ADMIN role is disabled.
+ *
+ * Every owner power in the codebase funnels through this one predicate, so
+ * returning false here makes the role unreachable no matter what is stored in
+ * the employees table - no owner can be recognised, granted or exercised.
+ */
 function is_super_admin(?array $user): bool {
-    return $user !== null && strcasecmp((string) ($user['role'] ?? ''), 'SUPER_ADMIN') === 0;
+    return false;
 }
 
 function employee_full_name(array $e): string {
@@ -79,6 +85,12 @@ function require_login(): array {
 /** Gate pages/actions that need one of the listed roles. Redirect when denied. */
 function require_role(array $roles): array {
     $u = require_login();
+    /* LOCKED: the owner role is not grantable in this build, so it is dropped
+       from every allow-list. An owner-only gate (require_role(['SUPER_ADMIN']))
+       therefore denies everyone, and shared gates simply lose one entry. */
+    $roles = array_values(array_filter($roles, static function ($r) {
+        return strcasecmp((string) $r, 'SUPER_ADMIN') !== 0;
+    }));
     if (!in_array($u['role'], $roles, true)) {
         redirect(base_url('/dashboard'));
     }
@@ -96,6 +108,12 @@ function do_login(string $email, string $password): ?array {
             error_log('folio: ' . count($candidates) . ' employee rows share ' . strtolower(trim($email))
                 . ' - password matched none of them. Add a UNIQUE index on employees.email after de-duplicating.');
         }
+        return null;
+    }
+    /* LOCKED: an owner / SUPER_ADMIN account can never sign in through this
+       build, even if such a row already exists in the database. */
+    if (strcasecmp((string) ($emp['role'] ?? ''), 'SUPER_ADMIN') === 0) {
+        error_log('folio: sign-in refused for owner-role account ' . strtolower(trim($email)) . ' (role locked in this build)');
         return null;
     }
     if (count($candidates) > 1) {
@@ -143,7 +161,7 @@ function do_logout(): void {
 /** Roles that supervise other people, i.e. anyone who may open the live floor. */
 function is_supervisor(?array $user): bool {
     $role = (string) ($user['role'] ?? '');
-    return $role === 'SUPER_ADMIN' || $role === 'ADMIN' || $role === 'HR';
+    return $role === 'ADMIN' || $role === 'HR';
 }
 
 /** May $viewer read the tracking data of $target? */
@@ -153,7 +171,6 @@ function access_can_view(?array $viewer, ?array $target): bool {
     // The owner is not a monitored target: they never appear as a tile in the
     // live grid and nobody reads their own tracking data.
     if (strcasecmp((string) ($target['role'] ?? ''), 'SUPER_ADMIN') === 0) return is_super_admin($viewer);
-    if (($viewer['role'] ?? '') === 'SUPER_ADMIN') return true;
     if (($viewer['role'] ?? '') === 'ADMIN') return true;
     if (($viewer['role'] ?? '') === 'HR') return ($target['role'] ?? '') === 'EMPLOYEE';
     return false;
@@ -190,7 +207,9 @@ function access_can_manage_role(?array $viewer, ?string $targetRole): bool {
 
 /** Roles $viewer is allowed to assign when creating or editing someone. */
 function access_assignable_roles(?array $viewer): array {
-    if (is_super_admin($viewer)) return ['EMPLOYEE', 'HR', 'ADMIN', 'SUPER_ADMIN'];
+    /* LOCKED: SUPER_ADMIN is never offered - the owner role cannot be granted
+       from this build by any account, including an owner one. */
+    if (is_super_admin($viewer)) return ['EMPLOYEE', 'HR', 'ADMIN'];
     if (($viewer['role'] ?? '') === 'ADMIN') return ['EMPLOYEE', 'HR', 'ADMIN'];
     if (($viewer['role'] ?? '') === 'HR') return ['EMPLOYEE'];
     return [];

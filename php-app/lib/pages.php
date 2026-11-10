@@ -2836,7 +2836,7 @@ function page_activity(): void {
 <div class="card p-3 mb-3">
   <form method="get" action="<?= esc(base_url('/admin/activity')) ?>" class="row g-2 align-items-end">
     <div class="col-md-3"><label class="form-label">Role</label>
-      <select name="role" class="form-select"><option value="">All roles</option><option value="SUPER_ADMIN" <?= $role === 'SUPER_ADMIN' ? 'selected' : '' ?>>SUPER_ADMIN</option><option value="ADMIN" <?= $role === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option><option value="HR" <?= $role === 'HR' ? 'selected' : '' ?>>HR</option><option value="EMPLOYEE" <?= $role === 'EMPLOYEE' ? 'selected' : '' ?>>EMPLOYEE</option></select></div>
+      <select name="role" class="form-select"><option value="">All roles</option><option value="ADMIN" <?= $role === 'ADMIN' ? 'selected' : '' ?>>ADMIN</option><option value="HR" <?= $role === 'HR' ? 'selected' : '' ?>>HR</option><option value="EMPLOYEE" <?= $role === 'EMPLOYEE' ? 'selected' : '' ?>>EMPLOYEE</option></select></div>
     <div class="col-md-4"><label class="form-label">Employee</label>
       <select name="email" class="form-select"><option value="">All employees</option><?php foreach ($emails as $em): ?><option value="<?= esc($em) ?>" <?= $email === $em ? 'selected' : '' ?>><?= esc($em) ?></option><?php endforeach; ?></select></div>
     <div class="col-md-2"><button class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button></div>
