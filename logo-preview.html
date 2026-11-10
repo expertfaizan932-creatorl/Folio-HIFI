@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Folio Logo Preview</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f7; margin: 0; padding: 40px; color: #2c3e50; }
+  h1 { color: #7030F0; margin-top: 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; margin-bottom: 34px; }
+  .tile { background: #fff; border-radius: 14px; box-shadow: 0 4px 18px rgba(0,0,0,.08); padding: 18px; text-align: center; }
+  .tile p { margin: 10px 0 0; font-size: 12px; color: #7b7f85; }
+  .grad { background: linear-gradient(135deg,#7030f0 0%,#321277 100%); border-radius: 14px; padding: 26px; }
+  .dark { background: #321277; border-radius: 14px; padding: 26px; align-self: flex-start; }
+  .dark .tile { background: #22104d; }
+  .dark .tile p { color: #c9b5ec; }
+  img { display: block; border-radius: 50%; }
+</style>
+</head>
+<body>
+<h1>Folio — official logo (from Hifi Logo.jfif, round/circular)</h1>
+
+<p style="color:#7b7f85;font-size:13px;margin-bottom:26px">Icons ab circle clip ke saath bake hote hain (transparent corners) — web logo, PWA aur Windows app (tray/login) teeno me same round look. Maskable icon full-bleed square rehta hai (Android apna mask lagata hai).</p>
+
+<div class="row">
+  <div class="tile"><img src="php-app/icons/icon-192.png" width="128" height="128"><p>App icon / tray (192)</p></div>
+  <div class="tile"><img src="php-app/icons/icon-512.png" width="160" height="160"><p>PWA icon (512)</p></div>
+  <div class="tile"><img src="php-app/icons/icon-maskable-512.png" width="160" height="160" style="border-radius:0"><p>Maskable (512) — full-bleed square</p></div>
+  <div class="tile"><img src="php-app/icons/icon-192.png" width="72" height="72"><p>Login page 72px</p></div>
+  <div class="tile"><img src="php-app/icons/icon-192.png" width="26" height="26"><p>Navbar 26px</p></div>
+  <div class="tile"><img src="php-app/icons/icon-192.png" width="16" height="16"><p>Tray 16px</p></div>
+</div>
+
+<div class="row">
+  <div class="grad">
+    <img src="php-app/icons/icon-512.png" width="96" height="96"><p style="color:#e6d9ff;font-size:12px;margin-top:10px">Web login / navbar gradient (#7030f0 → #321277)</p>
+  </div>
+  <div class="dark">
+    <div class="tile"><img src="php-app/icons/icon-192.png" width="96" height="96"><p>Agent login dark violet #321277</p></div>
+  </div>
+</div>
+
+<p style="color:#7b7f85;font-size:13px">Theme colors: deep violet <b>#321277</b>, accent violet <b>#7030F0</b> — sab jagah (web + desktop agent) use ho rahe hain.</p>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Monitor - Folio</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#e11d2e"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Folio"><link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/icon-192.png"><script defer src="/js/pwa.js"></script><style>
+    body { background: #f5f7fb; }
+    .navbar-wf { background: linear-gradient(135deg, #7030f0 0%, #e11d2e 100%); }
+    .navbar-wf .navbar-brand, .navbar-wf .nav-link { color: #fff; }
+    .navbar-wf .nav-link.active, .navbar-wf .nav-link:hover { color: #e6d9ff; }
+    .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    .stat-card .bi { font-size: 1.6rem; opacity: .85; }
+    .text-soft { color: #6c757d; }
+</style>
+</head>
+<body>
+<button id="pwa-install" type="button" hidden class="btn btn-sm btn-light position-fixed bottom-0 end-0 m-3 shadow" style="z-index:1080">&#128206; Install app</button>
+<nav class="navbar navbar-expand-lg navbar-wf mb-4">
+  <div class="container-fluid px-3 px-lg-4">
+    <a class="navbar-brand" href="/dashboard">
+      <img src="/icons/websitelogo.png?v=20261001" alt="Folio" class="d-inline-block" style="height: 36px; width: auto;">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#wfNav" aria-controls="wfNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="wfNav">
+      <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+          <a class="nav-link " href="/dashboard">
+            <i class="bi bi-house me-1"></i>Dashboard          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/employees">
+            <i class="bi bi-people me-1"></i>Employees          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link active" href="/monitor">
+            <i class="bi bi-camera-video me-1"></i>Live Monitor          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/portal/history">
+            <i class="bi bi-calendar3 me-1"></i>History / Reports          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/admin/usage">
+            <i class="bi bi-graph-up-arrow me-1"></i>Activity Report          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/admin/agent-config">
+            <i class="bi bi-sliders me-1"></i>Agent Settings          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/portal/users">
+            <i class="bi bi-key me-1"></i>Credentials          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/admin/activity">
+            <i class="bi bi-eye-fill me-1"></i>Activity Tracker          </a>
+        </li>
+              <li class="nav-item">
+          <a class="nav-link " href="/time">
+            <i class="bi bi-clock me-1"></i>My Time          </a>
+        </li>
+            </ul>
+      <span class="navbar-text text-white me-3 d-none d-lg-inline">
+        <i class="bi bi-person-circle me-1"></i>Admin Root        <span class="badge bg-light text-dark ms-1">ADMIN</span>
+      </span>
+      <a class="btn btn-sm btn-outline-light" href="/logout"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+    </div>
+  </div>
+</nav>
+<main class="container-fluid px-3 px-lg-4 pb-5">
+<style>
+    .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#fff; margin-right:6px; animation:wfPulse 1.2s infinite; }
+    @keyframes wfPulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .shot-tile { position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:10px; background:#0d0f1a; display:flex; align-items:center; justify-content:center; }
+    .shot-tile img { width:100%; height:100%; object-fit:cover; }
+    .shot-overlay { position:absolute; left:0; right:0; bottom:0; padding:16px 10px 8px; background:linear-gradient(180deg, transparent, rgba(0,0,0,.78)); color:#fff; font-size:.8rem; }
+    .shot-badge { position:absolute; top:8px; left:8px; }
+    .off-tile { color:#8b8f9c; font-size:.85rem; text-align:center; padding:0 16px; }
+</style>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h4 class="mb-0"><i class="bi bi-camera-video me-2 text-primary"></i>Live Monitor</h4>
+  <div class="text-end">
+    <div class="fw-semibold" id="mon-clock"></div>
+    <div class="text-muted small" id="mon-updated"></div>
+  </div>
+</div>
+<div class="row g-3" id="mon-grid"></div>
+
+<!-- drill-down modal -->
+<div class="modal fade" id="ddModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="ddTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="ddBody"></div></div></div></div>
+
+<!-- full-screen live shot modal -->
+<div class="modal fade" id="shotModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="shotTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center" id="shotBody"></div></div></div></div>
+
+<script>
+(function () {
+  var grid = document.getElementById('mon-grid');
+  var upd = document.getElementById('mon-updated');
+  var clock = document.getElementById('mon-clock');
+  function esc(s) { var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+  function t12(d) { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }); }
+  function liveTag(r) {
+    if (!r.shotId) return r.onDuty
+      ? '<span class="badge bg-dark">Waiting for screen&hellip;</span>'
+      : '<span class="badge bg-secondary">Off duty</span>';
+    var ago = r.shotAgeSec != null ? r.shotAgeSec : 9999;
+    if (r.onDuty && ago <= 45) {
+      return '<span class="badge bg-danger"><span class="live-dot"></span>LIVE &middot; ' + ago + 's ago</span>';
+    }
+    return '<span class="badge bg-dark">' + esc(r.shotAtFmt || 'shot') + ' &middot; ' + ago + 's old</span>';
+  }
+  function shotTile(r) {
+    if (!r.shotId) {
+      return '<div class="shot-tile"><div class="off-tile">' + (r.onDuty ? 'No screenshot yet &ndash; is the agent running?' : 'No screen when off duty') + '</div></div>';
+    }
+    return '<div class="shot-tile">'
+      + '<img class="d-block w-100" loading="lazy" style="cursor:zoom-in" alt="screen"'
+      + ' data-shot="' + r.shotId + '" data-email="' + escapeHtmlAttr(r.email) + '" data-name="' + escapeHtmlAttr(r.name) + '"'
+      + ' src="/api/monitor/shot/' + r.shotId + '?v=' + Date.now() + '">'
+      + '<span class="shot-badge">' + liveTag(r) + '</span>'
+      + '<div class="shot-overlay">'
+      + '<div class="fw-semibold">' + esc(r.currentApp || r.currentHost || 'No active window') + '</div>'
+      + (r.currentTitle ? '<div class="text-truncate">' + esc(r.currentTitle) + '</div>' : '')
+      + '</div></div>';
+  }
+  function escapeHtmlAttr(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+  function card(r) {
+    var duty = r.onDuty ? '<span class="badge bg-success">On Duty</span>' : '<span class="badge bg-secondary">Off</span>';
+    var extra = r.idle ? ' <span class="badge bg-warning text-dark">Idle</span>' : '';
+    if (r.status === 'ON_BREAK') extra += ' <span class="badge bg-info">Break</span>';
+    var role = r.role ? ' <span class="badge bg-light text-dark border">' + esc(r.role) + '</span>' : '';
+    return '<div class="col-12 col-md-6 col-xl-4"><div class="card p-2 h-100">'
+      + '<div class="d-flex justify-content-between align-items-start px-1 pt-1">'
+      + '<div><h6 class="mb-0">' + esc(r.name) + role + '</h6>'
+      + '<div class="text-muted small">' + esc(r.designation) + ' &middot; ' + esc(r.department) + '</div></div>'
+      + '<div class="text-end"><div>' + duty + '</div><div class="mt-1">' + (extra || '&nbsp;') + '</div></div>'
+      + '</div>'
+      + '<div class="mt-2">' + shotTile(r) + '</div>'
+      + '<div class="small mt-2 d-flex justify-content-between px-1">'
+      + '<span>Worked <b>' + esc(r.worked) + '</b></span>'
+      + '<span>Active ' + esc(r.active) + '</span>'
+      + '<span>Idle ' + esc(r.idleTime) + '</span>'
+      + '<span>Break ' + esc(r.breakTime) + '</span>'
+      + '</div>'
+      + '<div class="small text-muted mt-1 d-flex justify-content-between px-1">'
+      + '<span>Keys ' + esc(r.keystrokes) + ' &middot; Clicks ' + esc(r.mouseClicks) + '</span>'
+      + '<span>seen ' + esc(r.lastSeenAgo) + '</span>'
+      + '</div>'
+      + '<div class="mt-2"><button type="button" class="btn btn-sm btn-outline-primary w-100" data-dd="' + escapeHtmlAttr(r.email) + '"><i class="bi bi-bar-chart me-1"></i>Apps / Sites</button></div>'
+      + '</div></div>';
+  }
+  function openDD(email) {
+    fetch('/api/monitor/usage?email=' + encodeURIComponent(email))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        document.getElementById('ddTitle').textContent = d.email + ' - ' + d.date;
+        var apps = (d.apps || []).map(function (a) { return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.category) + '</td><td>' + esc(a.time) + '</td></tr>'; }).join('');
+        var sites = (d.sites || []).map(function (a) { return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.category) + '</td><td>' + esc(a.time) + '</td></tr>'; }).join('');
+        document.getElementById('ddBody').innerHTML =
+          '<div class="row g-2 mb-2"><div class="col-3 small">Worked <b>' + fmt(d.workedSec) + '</b></div>'
+          + '<div class="col-3 small">Active <b>' + fmt(d.activeSec) + '</b></div>'
+          + '<div class="col-3 small">Idle <b>' + fmt(d.idleSec) + '</b></div>'
+          + '<div class="col-3 small">Shots <b>' + d.screenshotCount + '</b></div></div>'
+          + '<h6 class="text-muted">Apps (' + d.appCount + ')</h6><div class="table-responsive"><table class="table table-sm">' + (apps || '<tr><td class="text-muted">none</td></tr>') + '</table></div>'
+          + '<h6 class="text-muted">Sites (' + d.siteCount + ')</h6><div class="table-responsive"><table class="table table-sm">' + (sites || '<tr><td class="text-muted">none</td></tr>') + '</table></div>';
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('ddModal')).show();
+      });
+  }
+  function fmt(secs) { secs = secs || 0; var h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60); return (h < 10 ? '0' : '') + h + 'h ' + (m < 10 ? '0' : '') + m + 'm'; }
+  function shotImg(id) { return '<img src="/api/monitor/shot/' + id + '?v=' + Date.now() + '" class="img-fluid" style="max-height:78vh" alt="screenshot">'; }
+  grid.addEventListener('click', function (e) {
+    var n = e.target;
+    while (n && n !== grid && !(n.dataset && (n.dataset.shot || n.dataset.dd))) n = n.parentNode;
+    if (!n || n === grid) return;
+    if (n.dataset.shot) {
+      document.getElementById('shotTitle').textContent = n.dataset.name + ' \u2013 live screen';
+      document.getElementById('shotBody').innerHTML = shotImg(n.dataset.shot);
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('shotModal')).show();
+    } else if (n.dataset.dd) {
+      openDD(n.dataset.dd);
+    }
+  });
+  function refresh() {
+    fetch('/api/monitor/live').then(function (r) { return r.json(); }).then(function (rows) {
+      grid.innerHTML = rows.map(card).join('') || '<div class="col-12 text-center text-muted py-4">No people visible</div>';
+      upd.textContent = 'updated ' + t12(new Date());
+    }).catch(function () { upd.textContent = 'offline \u2013 retrying\u2026'; });
+  }
+  function tick() { clock.textContent = t12(new Date()); }
+  refresh(); tick();
+  setInterval(refresh, 10000);
+  setInterval(tick, 1000);
+})();
+</script>
+    </main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

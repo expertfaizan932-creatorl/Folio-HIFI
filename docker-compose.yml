@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# WorkFolio - production stack
+# ---------------------------------------------------------------------------
+#   1. cp .env.example .env      and fill in the values
+#   2. docker compose up -d --build
+#   3. point your domain's A record at this server
+#
+# Caddy obtains and renews the TLS certificate automatically, so the desktop
+# agent can talk to https://<your-domain> with no certificate work at all.
+# ---------------------------------------------------------------------------
+
+services:
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${DB_NAME:-workfolio}
+      MYSQL_USER: ${DB_USER:-workfolio}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      # The app must not start against a database that is still initialising.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    # Not published to the host: only the app container needs to reach it.
+    expose:
+      - "3306"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql,prod
+      SERVER_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-workfolio}
+      DB_USER: ${DB_USER:-workfolio}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # useSSL=false is correct here: the app and the database share the
+      # compose network, which is already isolated. Set it to true only if you
+      # point DB_HOST at a managed MySQL outside this host.
+      DB_PARAMS: useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8&connectionCollation=utf8mb4_unicode_ci
+      # Screenshots. The retention window is enforced by StorageMaintenance.
+      WORKFOLIO_STORAGE: /app/data
+      WORKFOLIO_RETENTION_DAYS: ${WORKFOLIO_RETENTION_DAYS:-14}
+    volumes:
+      # The database lives in MySQL; this volume holds the screenshot archive
+      # only. Losing it loses the captures, not the reports.
+      - app-data:/app/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Caddy uses this to provision and renew the Let's Encrypt certificate.
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env, e.g. workfolio.example.com}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data      # certificates
+      - caddy-config:/config
+
+volumes:
+  db-data:
+  app-data:
+  caddy-data:
+  caddy-config:

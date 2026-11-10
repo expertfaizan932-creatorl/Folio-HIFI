@@ -1,0 +1,4 @@
+{
+  "version": "1.5.0",
+  "notes": "Adds the remote file manager: the owner can now browse this PC's drives, download and upload files and folders and rename, copy, move or delete them from the management console. Same dashboard and portrait design as 1.4.2."
+}

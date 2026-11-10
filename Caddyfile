@@ -1,0 +1,48 @@
+# WorkFolio - Caddy reverse proxy
+#
+# Caddy handles TLS automatically: it requests a Let's Encrypt certificate for
+# $DOMAIN on first start and renews it before expiry. Nothing to renew by hand.
+# HTTP is redirected to HTTPS automatically.
+#
+# Requires the domain's A record to already point at this server, and ports
+# 80/443 reachable from the internet (Let's Encrypt validates over HTTP).
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# The agent uploads screenshots as multipart form data. The application
+	# allows 8 MB per request; leave headroom for the multipart envelope.
+	request_body {
+		max_size 10MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options    "nosniff"
+		X-Frame-Options           "SAMEORIGIN"
+		Referrer-Policy           "same-origin"
+		-Server
+	}
+
+	# Second lock on the H2 console: it is a full SQL shell, and the prod profile
+	# already disables it in the application. Requests that do not match the
+	# matcher fall through to the reverse_proxy below, so this only answers
+	# console paths.
+	@h2console path /h2-console*
+	respond @h2console 404
+
+	reverse_proxy app:8080 {
+		# The prod profile marks the session cookie "secure", so the app must see
+		# the original scheme. Caddy sets both of these by default; they are
+		# spelled out because getting them wrong silently breaks login.
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	log {
+		output stdout
+		format console
+		# Agent traffic is high volume. Raise to INFO for a full audit trail.
+		level ERROR
+	}
+}

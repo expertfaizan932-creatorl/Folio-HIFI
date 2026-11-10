@@ -1,0 +1,35 @@
+# WorkFolio PHP - Apache rules for shared hosting.
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Screenshots and the database live under data/ - never serve it over HTTP.
+  RewriteRule ^data/ - [F,L]
+
+  # Real files (js, icons, images) are served directly...
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  # ...everything else goes to the front controller.
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Some Apache builds do not know the webmanifest MIME type.
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Config files and the SQLite database file must never be downloadable.
+<FilesMatch "^(config\.local\.php|\.env|.*\.sqlite.*)$">
+  Require all denied
+</FilesMatch>
+
+# Only applies when PHP runs as an Apache module (mod_php); PHP-FPM hosts
+# ignore these and use their own pool limits.
+<IfModule mod_php.c>
+  php_value upload_max_filesize 20M
+  php_value post_max_size 22M
+  php_value max_execution_time 120
+  php_value session.gc_maxlifetime 28800
+</IfModule>

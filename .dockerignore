@@ -1,0 +1,13 @@
+# Keep the build context small and never ship host state into the image.
+target/
+data/
+agent/bin/
+*.log
+.git/
+.gitignore
+.idea/
+.vscode/
+docs/
+*.md
+!README.md
+.env

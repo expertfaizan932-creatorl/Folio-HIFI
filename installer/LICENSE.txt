@@ -1,0 +1,37 @@
+Folio Agent - End User Licence Agreement
+=========================================
+
+This software is provided to employees of Hifi Marketing for the purpose of
+recording working time. Installing it means you accept the terms below.
+
+1. WHAT THE AGENT RECORDS
+   The agent records your working hours, idle time, break time, the applications
+   and websites you use, and periodic screenshots. It is installed so that your
+   employer can report accurate working time.
+
+2. TRANSPARENCY
+   The agent has a visible tray icon whenever it is running. It is never hidden.
+   What was recorded is visible to you, in the agent window and on the company
+   website. Hiding it is not possible and is not permitted.
+
+3. YOUR DATA
+   Data is stored on the company server and belongs to your employer. It is kept
+   in line with the company's retention policy. Local data is stored under your
+   Windows profile in %LOCALAPPDATA%\WorkFolioAgent and is removed when you
+   uninstall.
+
+4. REMOVAL
+   You may uninstall Folio Agent from Windows Settings at any time. The agent
+   supports a single undo for its activities: the actions it takes are limited
+   to reading your screen and keystroke activity, sending them to the company
+   server, and starting itself with Windows.
+
+5. NO WARRANTY
+   The software is provided "as is", without warranty of any kind, to the extent
+   permitted by law. Your statutory rights as a consumer are not affected.
+
+6. PRIVACY
+   Handling of the recorded data is governed by the company's privacy notice.
+
+If you have a question about what is recorded or how it is used, contact your
+manager or IT before installing.

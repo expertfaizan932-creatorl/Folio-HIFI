@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Credentials Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f4f6fb; }
+        .sidebar { min-height: 100vh; background: #1e2248; }
+        .sidebar .nav-link { color: #b8bcd6; border-radius: 8px; margin: 2px 0; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #667eea; color: #fff; }
+        .logo { font-weight: 800; }
+        .card { border: none; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+        .pwd-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 4px 10px; font-family: monospace; color: #1e293b; }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar p-3 text-white" style="width: 250px;">
+        <h4 class="logo mb-4 px-2">Folio</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/time}"><i class="bi bi-clock-history me-2"></i>My Time</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/monitor}"><i class="bi bi-camera-video me-2"></i>Live Monitor</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/portal/history}"><i class="bi bi-calendar3 me-2"></i>History / Reports</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/usage}"><i class="bi bi-graph-up-arrow me-2"></i>Activity Report</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/agent-config}"><i class="bi bi-sliders me-2"></i>Agent Settings</a></li>
+            <li class="nav-item"><a class="nav-link active" th:href="@{/portal/users}"><i class="bi bi-key me-2"></i>Credentials</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/employees}"><i class="bi bi-people me-2"></i>Employees</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/activity}"><i class="bi bi-eye-fill me-2"></i>Activity Tracker</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/profile}"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+            <li class="nav-item mt-4">
+                <form th:action="@{/logout}" method="post">
+                    <button class="nav-link w-100 text-start border-0 bg-transparent" style="color:#ff9c9c;"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+    <div class="flex-grow-1">
+        <nav class="navbar navbar-light bg-white shadow-sm px-4">
+            <span class="navbar-brand fw-semibold"><i class="bi bi-key me-2"></i>Credentials Management</span>
+            <span class="badge text-bg-danger"><i class="bi bi-shield-lock me-1"></i>Admin Only</span>
+        </nav>
+        <div class="p-4">
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <div class="card p-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-person-plus me-2"></i>Generate New Credentials</h6>
+                        <form th:action="@{/portal/users/save}" method="post">
+                            <div class="row g-2">
+                                <div class="col-6"><label class="form-label small">First Name</label><input type="text" class="form-control" name="firstName" required></div>
+                                <div class="col-6"><label class="form-label small">Last Name</label><input type="text" class="form-control" name="lastName" required></div>
+                                <div class="col-12"><label class="form-label small">Email</label><input type="email" class="form-control" name="email" required></div>
+                                <div class="col-6"><label class="form-label small">Role</label>
+                                    <select class="form-select" name="role" required>
+                                        <option value="EMPLOYEE">EMPLOYEE</option>
+                                        <option value="HR">HR</option>
+                                    </select>
+                                </div>
+                                <div class="col-6"><label class="form-label small">Department</label>
+                                    <select class="form-select" name="department">
+                                        <option th:value="Engineering">Engineering</option><option th:value="'Human Resources'">Human Resources</option><option th:value="Finance">Finance</option><option th:value="Marketing">Marketing</option><option th:value="Sales">Sales</option><option th:value="Admin">Admin</option>
+                                    </select>
+                                </div>
+                                <div class="col-12"><label class="form-label small">Password</label><input type="text" class="form-control" name="password" id="genpwd" value="" required></div>
+                                <div class="col-12"><label class="form-label small">Designation</label><input type="text" class="form-control" name="designation"></div>
+                                <div class="col-6"><label class="form-label small">Phone</label><input type="text" class="form-control" name="phone"></div>
+                                <div class="col-6"><label class="form-label small">Salary (₹)</label><input type="number" step="1000" class="form-control" name="salary" value="50000"></div>
+                                <div class="col-12"><label class="form-label small">Join Date</label><input type="date" class="form-control" name="joinDate"></div>
+                                <div class="col-12"><label class="form-label small">Address</label><input type="text" class="form-control" name="address"></div>
+                            </div>
+                            <button class="btn btn-success w-100 mt-3"><i class="bi bi-key me-1"></i>Generate &amp; Save Credentials</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card p-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-list-check me-2"></i>All User Credentials</h6>
+                        <div class="table-responsive" style="max-height:600px; overflow-y:auto;">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="table-light sticky-top">
+                                    <tr><th>Name</th><th>Email</th><th>Role</th><th>Dept</th><th>Join</th><th>Reset Pwd</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="e : ${employees}">
+                                        <td><strong th:text="${e.fullName}">Name</strong></td>
+                                        <td class="small" th:text="${e.email}">email</td>
+                                        <td><span class="badge rounded-pill" th:classappend="${e.role.name() == 'ADMIN'} ? 'bg-danger' : (${e.role.name() == 'HR'} ? 'bg-primary' : 'bg-secondary')" th:text="${e.role}">ROLE</span></td>
+                                        <td class="small" th:text="${e.department}">dept</td>
+                                        <td class="small" th:text="${e.joinDate}">date</td>
+                                        <td>
+                                            <form th:action="@{/portal/users/reset}" method="post" class="d-flex gap-1">
+                                                <input type="hidden" name="id" th:value="${e.id}">
+                                                <input type="hidden" name="back" value="/portal/users">
+                                                <input type="text" class="form-control form-control-sm" name="password" style="width:100px;" placeholder="new pwd">
+                                                <button class="btn btn-sm btn-outline-warning" title="Reset Password"><i class="bi bi-arrow-repeat"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

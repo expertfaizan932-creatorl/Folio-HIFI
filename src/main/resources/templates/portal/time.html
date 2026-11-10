@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Time Tracking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f4f6fb; }
+        .sidebar { min-height: 100vh; background: #1e2248; }
+        .sidebar .nav-link { color: #b8bcd6; border-radius: 8px; margin: 2px 0; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #667eea; color: #fff; }
+        .logo { font-weight: 800; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+        .big-inout { font-size: 1.6rem; font-weight: 800; }
+        .stat-val { font-size: 1.5rem; font-weight: 700; }
+        .chip-in { color: #059669; background: #d1fae5; }
+        .chip-out { color: #b91c1c; background: #fee2e2; }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar p-3 text-white" style="width: 250px;">
+        <h4 class="logo mb-4 px-2">Folio</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link active" th:href="@{/time}"><i class="bi bi-clock-history me-2"></i>My Time</a></li>
+            <li class="nav-item" th:if="${currentUser != null and (currentUser.role.name() == 'ADMIN' || currentUser.role.name() == 'HR')}"><a class="nav-link" th:href="@{/monitor}"><i class="bi bi-camera-video me-2"></i>Live Monitor</a></li>
+            <li class="nav-item" th:if="${currentUser != null and (currentUser.role.name() == 'ADMIN' || currentUser.role.name() == 'HR')}"><a class="nav-link" th:href="@{/portal/history}"><i class="bi bi-calendar3 me-2"></i>History / Reports</a></li>
+            <li class="nav-item" th:if="${currentUser != null and (currentUser.role.name() == 'ADMIN' || currentUser.role.name() == 'HR')}"><a class="nav-link" th:href="@{/admin/usage}"><i class="bi bi-graph-up-arrow me-2"></i>Activity Report</a></li>
+            <li class="nav-item" th:if="${currentUser != null and (currentUser.role.name() == 'ADMIN' || currentUser.role.name() == 'HR')}"><a class="nav-link" th:href="@{/admin/agent-config}"><i class="bi bi-sliders me-2"></i>Agent Settings</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/portal/users}"><i class="bi bi-key me-2"></i>Credentials</a></li>
+            <li class="nav-item" th:if="${currentUser != null and (currentUser.role.name() == 'ADMIN' || currentUser.role.name() == 'HR')}"><a class="nav-link" th:href="@{/employees}"><i class="bi bi-people me-2"></i>Employees</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/admin/activity}"><i class="bi bi-eye-fill me-2"></i>Activity Tracker</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/profile}"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+            <li class="nav-item mt-4">
+                <form th:action="@{/logout}" method="post">
+                    <button class="nav-link w-100 text-start border-0 bg-transparent" style="color:#ff9c9c;"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+    <div class="flex-grow-1">
+        <nav class="navbar navbar-light bg-white shadow-sm px-4">
+            <span class="navbar-brand fw-semibold">
+                <span th:text="${currentUser != null ? currentUser.fullName : 'Guest'}"></span>
+                <span class="text-muted fs-6" th:text="${currentUser != null ? ' • ' + currentUser.designation : ''}"></span>
+            </span>
+            <span class="badge rounded-pill text-bg-primary" th:text="${currentUser != null ? 'Role: ' + currentUser.role : ''}">Role</span>
+        </nav>
+        <div class="p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h4 class="fw-bold mb-0">TODAY</h4>
+                <span class="badge text-bg-secondary fs-6" th:text="${summary.date}">date</span>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card p-3 d-flex flex-row align-items-center">
+                        <div class="me-3"><span class="badge chip-in fs-6"><i class="bi bi-arrow-down-circle me-1"></i></span></div>
+                        <div><div class="text-muted small">IN</div><div class="big-inout" th:text="${summary.checkIn}">-</div></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card p-3 d-flex flex-row align-items-center">
+                        <div class="me-3"><span class="badge chip-out fs-6"><i class="bi bi-arrow-up-circle me-1"></i></span></div>
+                        <div><div class="text-muted small">OUT</div><div class="big-inout" th:text="${summary.checkOut}">-</div></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">WORKED HOURS</div>
+                        <div class="stat-val text-primary" th:text="${summary.worked}">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">BREAK</div>
+                        <div class="stat-val text-warning" th:text="${summary.break}">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">ACTIVE TIME</div>
+                        <div class="stat-val text-success" th:text="${summary.active}">-</div>
+                        <div><span class="badge text-bg-success-subtle" th:text="${summary.productivity + '% of shift active'}">%</span></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">IDLE TIME</div>
+                        <div class="stat-val text-danger" th:text="${summary.idle}">-</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">SCREENSHOTS TODAY</div>
+                        <div class="stat-val text-info" th:text="${summary.screenshots}">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-4">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-calendar-week me-2"></i>Work History</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>Date</th><th>IN</th><th>OUT</th><th>Worked</th><th>Active</th><th>Idle</th><th>Break</th><th>Shots</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${history}">
+                                <td th:text="${r.workDate}">date</td>
+                                <td th:text="${r.checkInText}">-</td>
+                                <td th:text="${r.checkOutText}">-</td>
+                                <td th:text="${r.workedText}">-</td>
+                                <td th:text="${r.activeText}">-</td>
+                                <td th:text="${r.idleText}">-</td>
+                                <td th:text="${r.breakText}">-</td>
+                                <td th:text="${r.screenshotCount}">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

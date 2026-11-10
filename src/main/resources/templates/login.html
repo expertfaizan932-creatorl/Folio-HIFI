@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-card { max-width: 420px; width: 100%; border: none; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+        .logo { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body>
+    <div class="container">
+        <div class="card login-card mx-auto">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h1 class="h3 fw-bold logo">Folio</h1>
+                    <p class="text-muted mb-0">Employee Management System</p>
+                </div>
+                <div th:if="${param.error}" class="alert alert-danger py-2">Invalid email or password.</div>
+                <div th:if="${param.logout}" class="alert alert-success py-2">You have been logged out.</div>
+                <form th:action="@{/login}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="username" class="form-control" placeholder="you@workfolio.com" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Sign In</button>
+                </form>
+                <hr>
+                <!-- Demo credentials are hidden by default. Set workfolio.demo.show-accounts=true to re-enable. -->
+                <div class="alert alert-light border small mb-0" th:if="${showDemoAccounts}">
+                    <strong>Demo Accounts</strong><br>
+                    &#128081; Admin: <code>admin@workfolio.com</code> / <code>admin123</code><br>
+                    HR: <code>hr@workfolio.com</code> / <code>hr123</code><br>
+                    Employee: <code>rahul@workfolio.com</code> / <code>emp123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
