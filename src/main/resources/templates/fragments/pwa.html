@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--
+    Shared PWA tags.
+
+    Thymeleaf fragment, inserted into every page's <head>:
+
+        <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+
+    This is what makes the portal installable: with the manifest linked and a
+    service worker registered, Edge and Chrome offer "Install this site as an
+    app", which opens the reports in a standalone window (Chromium/WebView2) with
+    its own taskbar entry and no address bar.
+-->
+<head th:fragment="pwaHead">
+    <link rel="manifest" th:href="@{/manifest.webmanifest}">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Folio">
+    <link rel="icon" type="image/png" sizes="192x192" th:href="@{/icons/icon-192.png}">
+    <link rel="apple-touch-icon" th:href="@{/icons/icon-192.png}">
+    <script defer th:src="@{/js/pwa.js}"></script>
+</head>
+<body>
+    <!--
+        Install affordance. pwa.js keeps it hidden until the browser actually
+        offers an install, so on Firefox/iOS nothing is ever shown.
+    -->
+    <button th:fragment="pwaInstall" id="pwa-install" type="button" hidden
+            class="btn btn-sm btn-light position-fixed bottom-0 end-0 m-3 shadow"
+            style="z-index:1080">
+        &#128206; Install app
+    </button>
+</body>
+</html>

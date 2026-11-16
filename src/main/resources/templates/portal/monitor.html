@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Live Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #0f1226; color: #dfe3f5; }
+        .sidebar { min-height: 100vh; background: #1e2248; position: sticky; top: 0; }
+        .sidebar .nav-link { color: #b8bcd6; border-radius: 8px; margin: 2px 0; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #667eea; color: #fff; }
+        .logo { font-weight: 800; }
+        .mon-card { background: #151a38; border: 1px solid #2a2f55; border-radius: 14px; overflow: hidden; }
+        .mon-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #000; display: block; }
+        .no-feed { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;
+                   color: #46507a; font-size: .8rem; background: #0d1024; }
+        .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #10b981; display: inline-block; animation: blink 1.2s infinite; }
+        @keyframes blink { 50% { opacity: .3; } }
+        .off-dot { background: #64748b; animation: none; }
+        .badge-status-on { background: rgba(16,185,129,.15); color: #34d399; }
+        .badge-status-break { background: rgba(245,158,11,.15); color: #fbbf24; }
+        .badge-status-off { background: rgba(100,116,139,.15); color: #94a3b8; }
+        .badge-status-idle { background: rgba(239,68,68,.15); color: #f87171; }
+        .tiny { font-size: .7rem; }
+        .truncate { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar p-3 text-white" style="width: 250px;">
+        <h4 class="logo mb-4 px-2">Folio</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/time}"><i class="bi bi-clock-history me-2"></i>My Time</a></li>
+            <li class="nav-item"><a class="nav-link active" th:href="@{/monitor}"><i class="bi bi-camera-video me-2"></i>Live Monitor</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/portal/history}"><i class="bi bi-calendar3 me-2"></i>History</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/usage}"><i class="bi bi-graph-up-arrow me-2"></i>Activity Report</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/agent-config}"><i class="bi bi-sliders me-2"></i>Agent Settings</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/employees}"><i class="bi bi-people me-2"></i>Employees</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/portal/users}"><i class="bi bi-key me-2"></i>Credentials</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/admin/activity}"><i class="bi bi-eye-fill me-2"></i>Activity Tracker</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/profile}"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+            <li class="nav-item mt-4">
+                <form th:action="@{/logout}" method="post">
+                    <button class="nav-link w-100 text-start border-0 bg-transparent" style="color:#ff9c9c;"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <div class="flex-grow-1">
+        <nav class="navbar navbar-dark bg-transparent px-4">
+            <span class="navbar-brand fw-semibold text-white"><i class="bi bi-broadcast me-2"></i>Live Screen Monitor</span>
+            <div class="d-flex align-items-center gap-3">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                    <label class="form-check-label tiny" for="autoRefresh">auto</label>
+                </div>
+                <span class="badge text-bg-danger"><span class="live-dot me-1"></span>LIVE <span id="clock"></span></span>
+            </div>
+        </nav>
+
+        <div class="px-4 pb-2 d-flex gap-3 small align-items-center">
+            <span class="text-muted">Click a card to open the app / website breakdown for that person.</span>
+        </div>
+
+        <div class="p-4">
+            <div class="row g-3" id="grid">
+                <div class="col-12 text-center text-muted py-5">Loading live feeds…</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- detail drawer -->
+<div class="offcanvas offcanvas-end offcanvas-dark" tabindex="-1" id="detail" style="width: 460px;">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="detailTitle">Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="row g-2 mb-3" id="detailStats"></div>
+        <h6 class="text-uppercase text-muted tiny mt-4">Applications</h6>
+        <div id="detailApps"></div>
+        <h6 class="text-uppercase text-muted tiny mt-4">Websites</h6>
+        <div id="detailSites"></div>
+        <a class="btn btn-sm btn-outline-light w-100 mt-4" id="detailReport" href="#">
+            <i class="bi bi-graph-up-arrow me-1"></i>Open full report
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let detailEmail = null;
+    const detailEl = document.getElementById('detail');
+    const bsOffcanvas = new bootstrap.Offcanvas(detailEl);
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function statusBadge(u) {
+        if (!u.onDuty) return `<span class="badge badge-status-off"><span class="live-dot off-dot me-1"></span>OFFLINE</span>`;
+        if (u.status === 'ON_BREAK') return `<span class="badge badge-status-break"><span class="live-dot me-1"></span>BREAK</span>`;
+        if (u.idle) return `<span class="badge badge-status-idle"><span class="live-dot me-1"></span>IDLE</span>`;
+        return `<span class="badge badge-status-on"><span class="live-dot me-1"></span>ON DUTY</span>`;
+    }
+
+    function card(u) {
+        const shot = u.shotId ? `<img src="/api/monitor/shot/${u.shotId}?t=${Date.now()}" alt="screen">`
+            : `<div class="no-feed"><i class="bi bi-camera-video-off me-2"></i>no feed yet</div>`;
+        const where = u.currentHost ? `${esc(u.currentHost)}`
+            : (u.currentApp ? esc(u.currentApp) : (u.onDuty ? 'tracking…' : '—'));
+        return `
+        <div class="col-md-6 col-xl-4">
+          <div class="mon-card" data-email="${esc(u.email)}" style="cursor:pointer">
+            <div class="d-flex align-items-center justify-content-between px-3 pt-2 pb-1">
+              <div style="min-width:0">
+                <strong class="text-white d-block truncate">${esc(u.name)}</strong>
+                <div class="text-muted tiny truncate">${esc(u.department || '')} • ${esc(u.designation || '')}</div>
+              </div>
+              ${statusBadge(u)}
+            </div>
+            ${shot}
+            <div class="px-3 py-2 d-flex justify-content-between text-muted tiny">
+              <span>IN <b class="text-white">${esc(u.checkIn)}</b></span>
+              <span>WORK <b class="text-white">${esc(u.worked)}</b></span>
+              <span class="truncate" style="max-width:45%">${where}</span>
+            </div>
+            <div class="px-3 pb-2 d-flex justify-content-between tiny">
+              <span class="text-success"><i class="bi bi-lightning-charge me-1"></i>${esc(u.active)}</span>
+              <span class="text-danger"><i class="bi bi-moon me-1"></i>${esc(u.idleTime)}</span>
+              <span class="text-info"><i class="bi bi-grid-3x3-gap me-1"></i>${u.appCount} app / ${u.siteCount} web</span>
+            </div>
+            <div class="px-3 pb-2 d-flex justify-content-between tiny text-muted">
+              <span><i class="bi bi-keyboard me-1"></i>${u.keystrokes}</span>
+              <span><i class="bi bi-cursor me-1"></i>${u.mouseClicks}</span>
+              <span><i class="bi bi-camera me-1"></i>${u.screenshots}</span>
+              <span>${esc(u.lastSeenAgo)}</span>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function refresh() {
+        try {
+            const res = await fetch('/api/monitor/live');
+            const data = await res.json();
+            const grid = document.getElementById('grid');
+            if (!data.length) {
+                grid.innerHTML = `<div class="col-12 text-center text-muted py-5">No employees yet.</div>`;
+                return;
+            }
+            grid.innerHTML = data.map(card).join('');
+            grid.querySelectorAll('.mon-card').forEach(el => {
+                el.addEventListener('click', () => openDetail(el.dataset.email));
+            });
+        } catch (e) {
+            document.getElementById('grid').innerHTML =
+                `<div class="col-12 text-center text-danger py-5">Server unreachable.</div>`;
+        }
+    }
+
+    async function openDetail(email) {
+        detailEmail = email;
+        const res = await fetch('/api/monitor/usage?email=' + encodeURIComponent(email));
+        const d = await res.json();
+        document.getElementById('detailTitle').textContent = email;
+        document.getElementById('detailStats').innerHTML = `
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">WORKED</div>
+            <div class="fw-bold">${d.workedSec ? fmt(d.workedSec) : '-'}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">ACTIVE</div>
+            <div class="fw-bold text-success">${fmt(d.activeSec)}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">IDLE</div>
+            <div class="fw-bold text-danger">${fmt(d.idleSec)}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">PRODUCTIVITY</div>
+            <div class="fw-bold">${d.productivity}%</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">KEYS</div>
+            <div class="fw-bold">${d.keystrokes}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">CLICKS</div>
+            <div class="fw-bold">${d.mouseClicks}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">APPS</div>
+            <div class="fw-bold text-info">${d.appCount}</div></div></div>
+          <div class="col-6"><div class="card bg-dark p-2 text-center"><div class="tiny text-muted">SITES</div>
+            <div class="fw-bold text-info">${d.siteCount}</div></div></div>`;
+        document.getElementById('detailApps').innerHTML = bars(d.apps, d.appSeconds);
+        document.getElementById('detailSites').innerHTML = bars(d.sites, d.siteSeconds);
+        document.getElementById('detailReport').href = '/admin/usage?email=' + encodeURIComponent(email);
+        bsOffcanvas.show();
+    }
+
+    function fmt(sec) {
+        sec = sec || 0;
+        const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+        return h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
+    }
+
+    function bars(rows, total) {
+        if (!rows || !rows.length) return `<div class="text-muted tiny">Nothing recorded today.</div>`;
+        return rows.map(r => {
+            const pct = total > 0 ? Math.round((r.seconds / total) * 100) : 0;
+            return `<div class="mb-2">
+              <div class="d-flex justify-content-between tiny">
+                <span class="truncate me-2" title="${esc(r.name)}">${esc(r.name)}</span>
+                <span class="text-muted">${esc(r.time)}</span>
+              </div>
+              <div class="progress" style="height:6px">
+                <div class="progress-bar" role="progressbar" style="width:${pct}%"></div>
+              </div>
+              <div class="text-muted" style="font-size:.65rem">${esc(r.category || '')} • ${pct}%</div>
+            </div>`;
+        }).join('');
+    }
+
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+    setInterval(() => {
+        document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+    setInterval(() => {
+        if (document.getElementById('autoRefresh').checked) refresh();
+    }, 5000);
+    refresh();
+</script>
+<th:block th:insert="~{fragments/pwa :: pwaInstall}"></th:block>
+</body>
+</html>

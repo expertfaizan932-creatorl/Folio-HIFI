@@ -1,0 +1,7 @@
+{
+  "product": "FZ FOLIO",
+  "component": "FolioAgent",
+  "version": "1.5.1",
+  "channel": "stable",
+  "server": "https://folio.biztrack.uk"
+}

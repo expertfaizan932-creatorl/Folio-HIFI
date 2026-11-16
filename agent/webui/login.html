@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Sign in</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* The window is transparent and this page IS the window: only the card is
+           painted, so the desktop shows through the rounded corners. */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        @keyframes ambientFlow {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(25px, -35px) scale(1.08); }
+            100% { transform: translate(-15px, 20px) scale(0.95); }
+        }
+
+        .ambient-glow-1 { animation: ambientFlow 12s ease-in-out infinite alternate; }
+        .ambient-glow-2 { animation: ambientFlow 16s ease-in-out infinite alternate-reverse; }
+
+        .gradient-btn-primary {
+            background: linear-gradient(90deg, #d81b60 0%, #ff4b5c 50%, #ff8c00 100%);
+            background-size: 200% auto;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 10px 25px -5px rgba(216, 27, 96, 0.4);
+        }
+        .gradient-btn-primary:hover {
+            background-position: right center;
+            box-shadow: 0 14px 30px -4px rgba(255, 75, 92, 0.6);
+            transform: translateY(-2px);
+        }
+        .gradient-btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        .glass-dark-outer {
+            background: #0b1020;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-dark-inner {
+            background: rgba(18, 25, 42, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .custom-input {
+            background: rgba(10, 14, 24, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .custom-input:focus {
+            border-bottom-color: #d81b60;
+            background: rgba(10, 14, 24, 0.9);
+            box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+        }
+
+        .smooth-appear {
+            animation: fadeInScale 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(216, 27, 96, 0.4); border-radius: 10px; }
+        body { -webkit-user-select: none; user-select: none; }
+        .no-drag { cursor: default; }
+    </style>
+</head>
+<body class="font-sans text-slate-100">
+
+    <div id="loginPage" class="fixed inset-0 glass-dark-outer overflow-hidden smooth-appear flex flex-col" onmousedown="startDrag(event)">
+
+        <!-- Ambient wash, clipped to the card -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="ambient-glow-1 absolute top-10 left-1/4 w-[450px] h-[450px] rounded-full bg-gradient-to-r from-pink-600/30 to-purple-600/30 blur-[120px]"></div>
+            <div class="ambient-glow-2 absolute bottom-10 right-1/4 w-[450px] h-[450px] rounded-full bg-gradient-to-r from-orange-500/30 to-pink-600/30 blur-[120px]"></div>
+        </div>
+
+        <!-- Window controls -->
+        <div class="absolute top-0 left-0 right-0 h-10 z-30 flex items-center justify-end gap-1.5 px-3">
+            <button type="button" onclick="winMin()" title="Minimise"
+                class="no-drag w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition">
+                <i class="fa-solid fa-minus text-xs"></i>
+            </button>
+            <button type="button" onclick="winClose()" title="Close"
+                class="no-drag w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500/80 transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Card content -->
+        <div class="relative z-10 flex-1 flex flex-col justify-center px-6 pt-9 pb-3 overflow-y-auto">
+
+            <!-- Logo Header with Neon Glow -->
+            <div class="flex flex-col items-center justify-center pb-3 relative">
+                <div class="absolute w-36 h-16 bg-gradient-to-r from-pink-500/40 via-red-500/40 to-orange-500/40 blur-2xl rounded-full top-3"></div>
+                <div class="relative z-10 mb-1">
+                    <img src="__LOGO_DATA_URI__" alt="Folio"
+                         class="w-16 h-16 rounded-full object-cover ring-2 ring-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.6)]">
+                </div>
+            </div>
+
+            <!-- Login Form Inner Container -->
+            <div class="glass-dark-inner rounded-2xl p-5 shadow-2xl">
+                <h1 class="text-lg font-bold text-white text-center mb-4 tracking-tight">System Login</h1>
+
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+                        <input type="email" id="email" required autocomplete="username"
+                            class="w-full px-4 py-2.5 rounded-xl text-sm text-white custom-input focus:outline-none font-medium"
+                            placeholder="you@company.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+                        <input type="password" id="password" required autocomplete="current-password"
+                            class="w-full px-4 py-2.5 rounded-xl text-sm text-white custom-input focus:outline-none font-medium"
+                            placeholder="Your password">
+                    </div>
+
+                    <div class="text-right">
+                        <a href="#" onclick="forgotPassword();return false;" class="text-xs text-slate-400 hover:text-pink-400 transition font-medium">
+                            Forgot Password?
+                        </a>
+                    </div>
+
+                    <div id="loginError" class="hidden p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-xs flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation text-red-400 text-sm flex-shrink-0"></i>
+                        <span id="loginErrorText">Invalid credentials.</span>
+                    </div>
+
+                    <button type="submit" id="loginButton"
+                        class="w-full py-3 px-6 rounded-xl text-white font-bold text-base tracking-wide gradient-btn-primary flex items-center justify-center space-x-2 mt-1">
+                        <span id="loginButtonLabel">Login</span>
+                    </button>
+                </form>
+            </div>
+
+            <div id="loginFooter" class="text-center mt-3 hidden">
+                <p class="text-xs text-slate-400 font-medium">Signing in&hellip;</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationToast" class="fixed bottom-6 right-6 transform translate-y-24 opacity-0 transition-all duration-300 z-50">
+        <div id="toastBg" class="bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 border border-white/10 backdrop-blur-md">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toastText" class="text-xs font-semibold">Notification message</span>
+        </div>
+    </div>
+
+    <script>
+        var wv = window.chrome && window.chrome.webview ? window.chrome.webview : null;
+        function post(msg) { try { if (wv) wv.postMessage(msg); } catch (e) { } }
+
+        var busy = false;
+
+        // ----- window controls -----
+        function winMin() { post({ type: 'minimize' }); }
+        function winClose() { post({ type: 'close' }); }
+
+        // Drag the frameless window from anywhere that is not an interactive
+        // control, so the card itself behaves like a native title bar.
+        function startDrag(e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            var t = e.target;
+            while (t && t !== document.body) {
+                var tag = (t.tagName || '').toUpperCase();
+                if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'A' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+                t = t.parentElement;
+            }
+            post({ type: 'drag' });
+        }
+
+        function setBusy(on) {
+            busy = on;
+            var btn = document.getElementById('loginButton');
+            var label = document.getElementById('loginButtonLabel');
+            btn.disabled = on;
+            if (on) {
+                label.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i>&nbsp; Signing in...';
+            } else {
+                label.textContent = 'Login';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loginErrorText').textContent = message || 'Sign-in failed.';
+            document.getElementById('loginError').classList.remove('hidden');
+        }
+
+        function clearError() {
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function forgotPassword() {
+            post({ type: 'forgot' });
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            if (busy) return;
+            clearError();
+            var email = document.getElementById('email').value.trim();
+            var password = document.getElementById('password').value;
+            if (!email || !password) { showError('Enter your work email and password.'); return; }
+            setBusy(true);
+            post({ type: 'login', email: email, password: password });
+        }
+
+        function showNotification(msg, type) {
+            var toast = document.getElementById('notificationToast');
+            var toastText = document.getElementById('toastText');
+            var toastIcon = document.getElementById('toastIcon');
+            toastText.textContent = msg;
+            if (type === 'success') toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            else if (type === 'warning') toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-400 text-lg';
+            else if (type === 'error') toastIcon.className = 'fa-solid fa-circle-xmark text-red-400 text-lg';
+            else toastIcon.className = 'fa-solid fa-circle-info text-blue-400 text-lg';
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(function () {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        if (wv) {
+            wv.addEventListener('message', function (e) {
+                var m = e.data || {};
+                if (m.type === 'credentials') {
+                    document.getElementById('email').value = m.email || '';
+                    document.getElementById('password').value = m.password || '';
+                    var field = (m.email) ? 'password' : 'email';
+                    var el = document.getElementById(field);
+                    if (el) el.focus();
+                } else if (m.type === 'loginResult') {
+                    setBusy(false);
+                    if (m.ok) {
+                        document.getElementById('loginButtonLabel').textContent = 'Signed in';
+                    } else {
+                        showError(m.error);
+                    }
+                } else if (m.type === 'toast') {
+                    showNotification(m.message, m.kind);
+                }
+            });
+            window.addEventListener('DOMContentLoaded', function () { post({ type: 'ready' }); });
+        }
+    </script>
+</body>
+</html>

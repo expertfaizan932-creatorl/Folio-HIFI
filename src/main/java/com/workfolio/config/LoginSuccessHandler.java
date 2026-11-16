@@ -1,0 +1,33 @@
+package com.workfolio.config;
+
+import com.workfolio.model.Employee;
+import com.workfolio.service.ActivityService;
+import com.workfolio.service.EmployeeService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@Component
+public class LoginSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final EmployeeService employeeService;
+    private final ActivityService activityService;
+
+    public LoginSuccessHandler(EmployeeService employeeService, ActivityService activityService) {
+        this.employeeService = employeeService;
+        this.activityService = activityService;
+    }
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
+        Employee user = employeeService.findByEmail(authentication.getName());
+        activityService.logLogin(request, user);
+        response.sendRedirect("/dashboard");
+    }
+}

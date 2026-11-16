@@ -1,0 +1,69 @@
+# ---- runtime data: employee screenshots, live frames, databases ----
+# NEVER commit these. They contain real employee screen captures and H2/SQLite
+# databases. Back them up out-of-band if you need them.
+data/
+php-app/data/
+*.mv.db
+*.trace.db
+*.lock.db
+*.sqlite
+*.sqlite3
+*.db
+
+# ---- local configuration / secrets ----
+# Only config.local.sample.php (the template) belongs in the repo.
+.env
+.env.local
+php-app/config.local.php
+config.local.php
+config.php
+*.jks
+*.keystore
+*.pfx
+id_rsa*
+
+# ---- build output ----
+target/
+dist/
+build/
+*.class
+*.jar
+!maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.jar
+
+# ---- logs and captured test artefacts ----
+*.log
+logs/
+run*.log
+server.log
+php-srv*.log
+live-test-frames.json
+*.jpg.tmp
+
+# ---- generated verification / debug output ----
+verify-*.png
+*.har
+nohup.out
+
+# ---- editors / OS ----
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+# ---- built installer / portable artefacts (regenerate from the scripts) ----
+release/
+usb/*.zip
+usb/FZ FOLIO/
+
+
+# ---- Android app ----
+android/.gradle/
+android/.idea/
+android/local.properties
+android/keystore.properties
+android/build/
+android/app/build/
+android/*.iml
+*.apk

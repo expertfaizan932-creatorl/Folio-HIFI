@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Agent Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f4f6fb; }
+        .sidebar { min-height: 100vh; background: #1e2248; position: sticky; top: 0; }
+        .sidebar .nav-link { color: #b8bcd6; border-radius: 8px; margin: 2px 0; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #667eea; color: #fff; }
+        .logo { font-weight: 800; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+        .form-switch .form-check-input { width: 2.2em; height: 1.1em; }
+        .hint { font-size: .74rem; color: #7c829c; }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body>
+<div class="d-flex">
+    <div class="sidebar p-3 text-white" style="width: 250px;">
+        <h4 class="logo mb-4 px-2">Folio</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/time}"><i class="bi bi-clock-history me-2"></i>My Time</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/monitor}"><i class="bi bi-camera-video me-2"></i>Live Monitor</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/portal/history}"><i class="bi bi-calendar3 me-2"></i>History</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/admin/usage}"><i class="bi bi-graph-up-arrow me-2"></i>Activity Report</a></li>
+            <li class="nav-item"><a class="nav-link active" th:href="@{/admin/agent-config}"><i class="bi bi-sliders me-2"></i>Agent Settings</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/employees}"><i class="bi bi-people me-2"></i>Employees</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/portal/users}"><i class="bi bi-key me-2"></i>Credentials</a></li>
+            <li class="nav-item" th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"><a class="nav-link" th:href="@{/admin/activity}"><i class="bi bi-eye-fill me-2"></i>Activity Tracker</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/profile}"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+            <li class="nav-item mt-4">
+                <form th:action="@{/logout}" method="post">
+                    <button class="nav-link w-100 text-start border-0 bg-transparent" style="color:#ff9c9c;"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <div class="flex-grow-1">
+        <nav class="navbar navbar-light bg-white shadow-sm px-4">
+            <span class="navbar-brand fw-semibold"><i class="bi bi-sliders me-2 text-primary"></i>Monitoring Agent Settings</span>
+            <span class="text-muted small">Changes reach the employee's agent on its next cycle</span>
+        </nav>
+
+        <div class="p-4">
+            <div class="alert alert-success py-2 small" th:if="${purged != null}"
+                 th:text="${'Removed ' + purged + ' screenshot(s) outside the retention window.'}">ok</div>
+            <div class="alert alert-warning py-2 small" th:if="${param.denied != null}"
+                 th:text="'You can only change monitoring settings for employees under you.'">ok</div>
+
+            <div class="card p-4 mb-3">
+                <form method="get" th:action="@{/admin/agent-config}" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Select employee</label>
+                        <select class="form-select" name="email" onchange="this.form.submit()">
+                            <option th:each="e : ${employees}" th:value="${e.email}"
+                                    th:text="|${e.fullName} (${e.email})|"
+                                    th:selected="${selEmail == e.email}">e</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <span class="badge text-bg-light text-dark"><i class="bi bi-hdd me-1"></i><span th:text="${storageUsed / 1024 + ' KB captured'}">0 KB</span></span>
+                    </div>
+                </form>
+            </div>
+
+            <form method="post" th:action="@{/admin/agent-config/save}" th:if="${config != null}">
+                <input type="hidden" name="email" th:value="${config.email}">
+
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="card p-4 h-100">
+                            <h5 class="fw-semibold mb-3"><i class="bi bi-camera me-2"></i>Screenshots</h5>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="captureScreenshots" value="true" id="cap"
+                                       th:checked="${config.captureScreenshots}">
+                                <label class="form-check-label" for="cap">Capture scheduled screenshots</label>
+                            </div>
+
+                            <label class="form-label small text-muted">Screenshot interval</label>
+                            <div class="input-group mb-2">
+                                <input type="number" class="form-control" name="screenshotIntervalSeconds" min="10" max="7200"
+                                       th:value="${config.screenshotIntervalSeconds}">
+                                <span class="input-group-text">seconds</span>
+                            </div>
+                            <div class="hint mb-3">The custom time period between automatic captures (10s – 7200s). 300 = every 5 minutes.</div>
+
+                            <label class="form-label small text-muted">Live stream interval</label>
+                            <div class="input-group mb-2">
+                                <input type="number" class="form-control" name="liveStreamIntervalSeconds" min="0" max="600"
+                                       th:value="${config.liveStreamIntervalSeconds}">
+                                <span class="input-group-text">seconds</span>
+                            </div>
+                            <div class="hint mb-3">0 turns live view off. Otherwise small frames are posted at this rate so the admin's Live Monitor updates.</div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">JPEG quality</label>
+                                    <input type="number" class="form-control" name="imageQuality" min="10" max="100"
+                                           th:value="${config.imageQuality}">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">Max width (px)</label>
+                                    <input type="number" class="form-control" name="imageMaxWidth" min="320" max="3840"
+                                           th:value="${config.imageMaxWidth}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card p-4 h-100">
+                            <h5 class="fw-semibold mb-3"><i class="bi bi-activity me-2"></i>Activity Tracking</h5>
+
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="trackMouseKeyboard" value="true" id="mk"
+                                       th:checked="${config.trackMouseKeyboard}">
+                                <label class="form-check-label" for="mk">Record mouse &amp; keyboard activity</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="trackAppUsage" value="true" id="au"
+                                       th:checked="${config.trackAppUsage}">
+                                <label class="form-check-label" for="au">Record which applications are used</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="trackWebsites" value="true" id="ws"
+                                       th:checked="${config.trackWebsites}">
+                                <label class="form-check-label" for="ws">Record which websites are visited</label>
+                            </div>
+
+                            <label class="form-label small text-muted">Idle threshold (seconds without input)</label>
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control" name="idleThresholdSeconds" min="10" max="3600"
+                                       th:value="${config.idleThresholdSeconds}">
+                                <span class="input-group-text">sec</span>
+                            </div>
+
+                            <label class="form-label small text-muted">Usage sampling interval</label>
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control" name="sampleIntervalSeconds" min="2" max="300"
+                                       th:value="${config.sampleIntervalSeconds}">
+                                <span class="input-group-text">sec</span>
+                            </div>
+                            <div class="hint">How often the agent reports which window is in the foreground. Lower = more accurate time totals, more traffic.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="card p-4">
+                            <h5 class="fw-semibold mb-3"><i class="bi bi-shield-exclamation me-2"></i>Exclusions &amp; Privacy</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Never record these processes</label>
+                                    <textarea class="form-control font-monospace" rows="3" name="excludedProcesses"
+                                              th:text="${config.excludedProcesses}"></textarea>
+                                    <div class="hint">Comma separated. Shell/OS background processes are ignored by default.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Never record these sites</label>
+                                    <textarea class="form-control font-monospace" rows="3" name="blockedSites"
+                                              th:text="${config.blockedSites}"></textarea>
+                                    <div class="hint">Comma separated hosts, e.g. <code>mail.google.com,facebook.com</code>. Time on them is not reported.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i>Save settings</button>
+                    <a class="btn btn-light" th:href="@{/admin/agent-config}">Reset</a>
+                </div>
+            </form>
+
+            <div class="card p-4 mt-3">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-trash me-2"></i>Retention</h5>
+                <form method="post" th:action="@{/admin/agent-config/purge}" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Delete captures older than</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="keepDays" min="1" max="365" value="30">
+                            <span class="input-group-text">days</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-danger w-100"><i class="bi bi-trash me-1"></i>Purge now</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card p-4 mt-3" th:if="${allConfigs != null and !allConfigs.isEmpty()}">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-list-check me-2"></i>All Employees</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                        <tr><th>Employee</th><th class="text-end">Shot every</th><th class="text-end">Live every</th>
+                            <th class="text-end">Idle after</th><th class="text-center">Screens</th><th class="text-center">Input</th>
+                            <th class="text-center">Apps</th><th class="text-center">Web</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${allConfigs}">
+                            <td>
+                                <a class="text-decoration-none" th:href="@{/admin/agent-config(email=${c.email})}" th:text="${c.email}">email</a>
+                            </td>
+                            <td class="text-end" th:text="${c.screenshotIntervalSeconds + 's'}">-</td>
+                            <td class="text-end" th:text="${c.liveStreamIntervalSeconds == 0 ? 'off' : c.liveStreamIntervalSeconds + 's'}">-</td>
+                            <td class="text-end" th:text="${c.idleThresholdSeconds + 's'}">-</td>
+                            <td class="text-center"><i class="bi" th:classappend="${c.captureScreenshots} ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-secondary'"></i></td>
+                            <td class="text-center"><i class="bi" th:classappend="${c.trackMouseKeyboard} ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-secondary'"></i></td>
+                            <td class="text-center"><i class="bi" th:classappend="${c.trackAppUsage} ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-secondary'"></i></td>
+                            <td class="text-center"><i class="bi" th:classappend="${c.trackWebsites} ? 'bi-check-circle-fill text-success' : 'bi-x-circle text-secondary'"></i></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

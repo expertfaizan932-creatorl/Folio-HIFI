@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hifi Time Tracker - Multi-Variant UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        tech: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        hifi: {
+                            red: '#FF2E55',
+                            orange: '#FF8A00',
+                            purple: '#9B51E0',
+                            pink: '#E52E71'
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 30px -5px rgba(255, 46, 85, 0.3)',
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.07)',
+                        'neu-light': '9px 9px 18px #d1d5db, -9px -9px 18px #ffffff',
+                        'neu-dark': '9px 9px 18px #0f172a, -9px -9px 18px #1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-ring {
+            background: conic-gradient(from 180deg at 50% 50%, #FF8A00 0deg, #E52E71 120deg, #9B51E0 240deg, #FF8A00 360deg);
+            padding: 3px;
+            border-radius: 9999px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .gradient-ring:hover {
+            transform: rotate(180deg) scale(1.05);
+        }
+
+        /* Continuous Pulse for active timers */
+        @keyframes subtlePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.92; }
+        }
+
+        .active-timer-pulse {
+            animation: subtlePulse 2.5s infinite ease-in-out;
+        }
+
+        /* Glassmorphic Variant Backdrop */
+        .glass-backdrop {
+            background: rgba(255, 255, 255, 0.65) !important;
+            backdrop-filter: blur(20px) saturate(190%);
+            -webkit-backdrop-filter: blur(20px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 25px 50px -12px rgba(229, 46, 113, 0.15) !important;
+        }
+
+        /* Neumorphic Variant Design */
+        .neu-backdrop {
+            background: #e2e8f0 !important;
+            box-shadow: 16px 16px 32px #cbd5e1, -16px -16px 32px #ffffff !important;
+            border: none !important;
+        }
+
+        /* Minimal Tech Variant */
+        .tech-backdrop {
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* Floating Widget Variant */
+        .floating-widget-mode {
+            max-width: 320px !important;
+            border-radius: 32px !important;
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25) !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body id="app-body" class="h-full flex items-center justify-center p-4 bg-slate-100 text-slate-800 transition-all duration-500 font-sans min-h-screen">
+
+    <div id="main-card" class="w-full max-w-md bg-white rounded-3xl shadow-soft border border-slate-200/80 p-6 sm:p-7 relative overflow-hidden transition-all duration-500">
+        
+        <!-- Ambient Glow FX -->
+        <div id="ambient-glow" class="absolute -top-24 -right-24 w-60 h-60 bg-gradient-to-br from-hifi-pink/15 via-hifi-orange/15 to-hifi-purple/15 rounded-full blur-3xl pointer-events-none transition-all duration-700"></div>
+
+        <!-- Header Bar -->
+        <div id="card-header" class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 transition-colors">
+            <div class="flex items-center space-x-3">
+                <!-- Hifi Logo -->
+                <div class="gradient-ring shadow-sm cursor-pointer" onclick="triggerGlowEffect()" title="Hifi Time Tracker">
+                    <div id="logo-inner" class="w-10 h-10 bg-white rounded-full flex items-center justify-center transition-colors">
+                        <span class="text-slate-900 font-black text-sm tracking-tighter flex items-center select-none">
+                            h<span class="text-hifi-red relative inline-block">i<span class="absolute -top-1.5 left-0.5 w-1.5 h-1.5 bg-hifi-red rounded-sm"></span></span>f<span class="text-hifi-red relative inline-block">i<span class="absolute -top-1.5 left-0.5 w-1.5 h-1.5 bg-hifi-red rounded-sm"></span></span>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <h1 id="brand-title" class="text-base font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                        hifi <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-hifi-red/10 text-hifi-red border border-hifi-red/20 uppercase tracking-wider">Tracker</span>
+                    </h1>
+                    <p id="variant-label" class="text-[11px] text-slate-400 font-medium">Modern Sleek Design</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Variant Switcher Button -->
+                <button onclick="toggleVariantModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-all flex items-center justify-center gap-1 text-xs shadow-xs" title="Switch Design Variant">
+                    <i class="fa-solid fa-wand-magic-sparkles text-hifi-red"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Status & Timer Section -->
+        <div id="timer-section" class="text-center mb-6 relative">
+            <div id="status-pill" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mb-3 border border-slate-200/60 transition-all">
+                <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="session-status-text">Started at</span> 
+                <span id="start-time-label" class="font-mono font-bold text-slate-900">11:29 AM</span>
+            </div>
+
+            <!-- Timer Banner Display -->
+            <div id="main-timer" class="text-5xl font-extrabold text-slate-900 font-mono tracking-tight my-1 flex items-center justify-center gap-1 active-timer-pulse transition-all">
+                <span id="timer-text">01:32:43</span>
+                <span class="text-2xl text-hifi-red font-sans font-extrabold">h</span>
+            </div>
+
+            <!-- Daily Target Progress Bar -->
+            <div id="progress-container" class="mt-5 px-1">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
+                    <span id="progress-title" class="flex items-center gap-1"><i class="fa-solid fa-bullseye text-[10px]"></i> Goal Completion</span>
+                    <span id="goal-percentage" class="text-slate-700 font-mono font-bold">38%</span>
+                </div>
+                <div id="progress-track" class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/40">
+                    <div id="goal-progress-bar" class="h-full bg-gradient-to-r from-hifi-orange via-hifi-red to-hifi-purple rounded-full transition-all duration-500" style="width: 38%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Grid -->
+        <div id="controls-grid" class="grid grid-cols-2 gap-3 mb-5 items-center">
+            <button id="clock-btn" onclick="toggleClock()" class="py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg shadow-orange-500/25 bg-gradient-to-r from-[#FF9500] to-[#FF5E3A] hover:from-[#f08c00] hover:to-[#f05230] text-white flex items-center justify-center gap-2 transform active:scale-95">
+                <i id="clock-icon" class="fa-solid fa-stopwatch text-base"></i>
+                <span id="clock-btn-text">Clock Out</span>
+            </button>
+
+            <button id="break-btn" onclick="toggleBreak()" class="py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 border border-indigo-100 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center gap-2 transform active:scale-95">
+                <i id="break-icon" class="fa-solid fa-mug-hot text-base"></i>
+                <span id="break-btn-text">Take a Break</span>
+            </button>
+        </div>
+
+        <!-- Break Remaining Bar -->
+        <div id="break-status-bar" class="flex items-center justify-between text-xs text-slate-400 mb-6 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100 transition-all">
+            <span class="flex items-center gap-1.5 font-medium">
+                <i class="fa-regular fa-clock text-slate-400"></i> Break time remaining:
+            </span>
+            <span id="break-time-left" class="font-mono font-bold text-indigo-600">30:00 min</span>
+        </div>
+
+        <!-- Activity Log List -->
+        <div id="activity-section">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h2 id="activity-title" class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calendar-day text-[10px]"></i> Today's Activity
+                </h2>
+                <span id="total-summary" class="text-xs text-slate-400 font-medium">Total: <strong id="total-time-today" class="font-mono font-bold text-slate-800">03:20:36 h</strong></span>
+            </div>
+
+            <div id="logs-container" class="space-y-2.5 max-h-44 overflow-y-auto pr-1">
+                <div class="log-item bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center justify-between hover:border-slate-200 transition-all">
+                    <div class="text-xs text-slate-500 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-hifi-red"></span>
+                        <span>In <strong class="text-slate-800 font-mono">11:29 AM</strong></span>
+                        <span class="text-slate-300">•</span>
+                        <span>Out <strong class="text-slate-800 font-mono">05:04 PM</strong></span>
+                    </div>
+                    <div class="log-badge font-mono font-bold text-xs text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
+                        05:35:00 h
+                    </div>
+                </div>
+
+                <div class="log-item bg-slate-50 border border-slate-100 rounded-2xl p-3 flex items-center justify-between hover:border-slate-200 transition-all">
+                    <div class="text-xs text-slate-500 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>In <strong class="text-slate-800 font-mono">09:00 AM</strong></span>
+                        <span class="text-slate-300">•</span>
+                        <span>Out <strong class="text-slate-800 font-mono">12:15 PM</strong></span>
+                    </div>
+                    <div class="log-badge font-mono font-bold text-xs text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs">
+                        03:15:00 h
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Design Variant & Theme Selection Modal -->
+    <div id="variant-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300" id="variant-modal-content">
+            
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-swatchbook text-hifi-red"></i> UI Design Variants
+                    </h3>
+                    <p class="text-xs text-slate-400">Transform the layout, structure & visual theme</p>
+                </div>
+                <button onclick="toggleVariantModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Design Options Grid -->
+            <div class="space-y-3 mb-5 max-h-80 overflow-y-auto pr-1">
+                
+                <!-- Variant 1: Modern Clean -->
+                <button onclick="applyVariant('sleek')" class="w-full p-3.5 rounded-2xl border-2 border-hifi-red bg-white text-left hover:border-hifi-red transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-hifi-red group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-table-cells"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">1. Modern Clean (Default)</div>
+                            <div class="text-[11px] text-slate-400">Structured card layout with crisp shadows</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-hifi-red"></i>
+                </button>
+
+                <!-- Variant 2: Glassmorphic Floating Card -->
+                <button onclick="applyVariant('glass')" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-gradient-to-r from-pink-50/60 to-purple-50/60 text-left hover:border-hifi-red transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 group-hover:bg-hifi-red group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-[#E52E71] fa-cubes-stacked"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">2. Glassmorphic Aura</div>
+                            <div class="text-[11px] text-slate-400">Translucent frosted glass with colorful glow</div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Variant 3: Neumorphic Soft UI -->
+                <button onclick="applyVariant('neu')" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-200/50 text-left hover:border-hifi-red transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-300 flex items-center justify-center text-slate-700 group-hover:bg-hifi-red group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">3. Neumorphic Soft UI</div>
+                            <div class="text-[11px] text-slate-400">Soft extruded 3D tactile buttons & shadows</div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Variant 4: Cyber Tech Minimalist -->
+                <button onclick="applyVariant('tech')" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-900 text-left hover:border-hifi-red transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 group-hover:bg-hifi-red group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-terminal"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-white">4. Cyber Tech HUD</div>
+                            <div class="text-[11px] text-slate-400">Dark high-contrast terminal design with mono fonts</div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Variant 5: Compact Floating Widget -->
+                <button onclick="applyVariant('compact')" class="w-full p-3.5 rounded-2xl border-2 border-slate-100 bg-indigo-50/50 text-left hover:border-hifi-red transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:bg-hifi-red group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">5. Compact Floating Widget</div>
+                            <div class="text-[11px] text-slate-400">Slimmed-down floating pill layout for quick focus</div>
+                        </div>
+                    </div>
+                </button>
+
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-500">Audio Tone Effects</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="sound-toggle" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-hifi-red"></div>
+                </label>
+            </div>
+
+            <button onclick="toggleVariantModal()" class="w-full mt-4 py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold hover:opacity-90 transition-opacity">
+                Apply & Done
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let isClockedIn = true;
+        let isOnBreak = false;
+        let secondsElapsed = 5563; // 01:32:43
+        let breakSecondsLeft = 1800; // 30 min break
+        let activeVariant = 'sleek';
+
+        function toggleVariantModal() {
+            const modal = document.getElementById('variant-modal');
+            const content = document.getElementById('variant-modal-content');
+            if (modal.classList.contains('opacity-0')) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+            }
+        }
+
+        // Complete UI Transformation Handler
+        function applyVariant(variant) {
+            playSoundNotification();
+            activeVariant = variant;
+            
+            const body = document.getElementById('app-body');
+            const card = document.getElementById('main-card');
+            const label = document.getElementById('variant-label');
+            const timer = document.getElementById('main-timer');
+            const logoInner = document.getElementById('logo-inner');
+            const statusPill = document.getElementById('status-pill');
+            const breakStatusBar = document.getElementById('break-status-bar');
+
+            // Reset all variant-specific classes
+            card.className = "w-full transition-all duration-500 rounded-3xl p-6 sm:p-7 relative overflow-hidden ";
+            card.classList.remove('glass-backdrop', 'neu-backdrop', 'tech-backdrop', 'floating-widget-mode');
+            body.className = "h-full flex items-center justify-center p-4 transition-all duration-500 font-sans min-h-screen ";
+            
+            // Re-apply targeted variant styles
+            if (variant === 'sleek') {
+                body.classList.add('bg-slate-100', 'text-slate-800');
+                card.classList.add('max-w-md', 'bg-white', 'shadow-soft', 'border', 'border-slate-200/80');
+                label.textContent = "Modern Sleek Design";
+                logoInner.className = "w-10 h-10 bg-white rounded-full flex items-center justify-center transition-colors";
+                statusPill.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mb-3 border border-slate-200/60";
+                breakStatusBar.className = "flex items-center justify-between text-xs text-slate-400 mb-6 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100";
+            } 
+            else if (variant === 'glass') {
+                body.classList.add('bg-gradient-to-br', 'from-rose-100', 'via-purple-100', 'to-sky-100');
+                card.classList.add('max-w-md', 'glass-backdrop');
+                label.textContent = "Glassmorphic Aura";
+                logoInner.className = "w-10 h-10 bg-white/80 rounded-full flex items-center justify-center backdrop-blur-sm";
+                statusPill.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm text-xs font-semibold text-slate-700 mb-3 border border-white/60";
+                breakStatusBar.className = "flex items-center justify-between text-xs text-slate-600 mb-6 px-3 py-2.5 rounded-xl bg-white/40 border border-white/60";
+            } 
+            else if (variant === 'neu') {
+                body.classList.add('bg-[#e2e8f0]');
+                card.classList.add('max-w-md', 'neu-backdrop');
+                label.textContent = "Neumorphic Soft UI";
+                logoInner.className = "w-10 h-10 bg-[#e2e8f0] rounded-full flex items-center justify-center shadow-inner";
+                statusPill.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e2e8f0] text-xs font-semibold text-slate-600 mb-3 shadow-[inset_3px_3px_6px_#cbd5e1,inset_-3px_-3px_6px_#ffffff]";
+                breakStatusBar.className = "flex items-center justify-between text-xs text-slate-500 mb-6 px-3 py-2.5 rounded-xl bg-[#e2e8f0] shadow-[inset_3px_3px_6px_#cbd5e1,inset_-3px_-3px_6px_#ffffff]";
+            } 
+            else if (variant === 'tech') {
+                body.classList.add('bg-slate-950', 'text-slate-100');
+                card.classList.add('max-w-md', 'tech-backdrop', 'font-tech');
+                label.textContent = "Cyber Tech HUD";
+                logoInner.className = "w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center border border-slate-700";
+                statusPill.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-xs font-mono text-emerald-400 mb-3 border border-emerald-500/30";
+                breakStatusBar.className = "flex items-center justify-between text-xs text-slate-400 mb-6 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-800 font-mono";
+            } 
+            else if (variant === 'compact') {
+                body.classList.add('bg-slate-200');
+                card.classList.add('floating-widget-mode', 'bg-white', 'border', 'border-slate-300');
+                label.textContent = "Compact Floating Widget";
+                logoInner.className = "w-10 h-10 bg-white rounded-full flex items-center justify-center";
+                statusPill.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mb-3";
+                breakStatusBar.className = "flex items-center justify-between text-xs text-slate-400 mb-6 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100";
+            }
+
+            toggleVariantModal();
+        }
+
+        function formatTime(totalSeconds) {
+            const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(totalSeconds % 60).padStart(2, '0');
+            return `${hrs}:${mins}:${secs}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-text').textContent = formatTime(secondsElapsed);
+        }
+
+        function playSoundNotification() {
+            if (document.getElementById('sound-toggle').checked) {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5 Tone
+                    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.12);
+                } catch(e) {}
+            }
+        }
+
+        function toggleClock() {
+            playSoundNotification();
+            isClockedIn = !isClockedIn;
+            const btn = document.getElementById('clock-btn');
+            const btnText = document.getElementById('clock-btn-text');
+            const icon = document.getElementById('clock-icon');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('session-status-text');
+
+            if (isClockedIn) {
+                btn.className = "py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg shadow-orange-500/25 bg-gradient-to-r from-[#FF9500] to-[#FF5E3A] hover:from-[#f08c00] hover:to-[#f05230] text-white flex items-center justify-center gap-2 transform active:scale-95";
+                btnText.textContent = "Clock Out";
+                icon.className = "fa-solid fa-stopwatch text-base";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                statusText.textContent = "Started at";
+            } else {
+                btn.className = "py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg shadow-emerald-500/25 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white flex items-center justify-center gap-2 transform active:scale-95";
+                btnText.textContent = "Clock In";
+                icon.className = "fa-solid fa-play text-base";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+                statusText.textContent = "Paused at";
+            }
+        }
+
+        function toggleBreak() {
+            playSoundNotification();
+            isOnBreak = !isOnBreak;
+            const breakBtn = document.getElementById('break-btn');
+            const breakBtnText = document.getElementById('break-btn-text');
+            const statusDot = document.getElementById('status-dot');
+
+            if (isOnBreak) {
+                breakBtn.className = "py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 border border-amber-300 bg-amber-100/80 text-amber-800 flex items-center justify-center gap-2 transform active:scale-95 animate-pulse";
+                breakBtnText.textContent = "End Break";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+            } else {
+                breakBtn.className = "py-3.5 px-4 rounded-2xl font-bold text-sm transition-all duration-300 border border-indigo-100 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center gap-2 transform active:scale-95";
+                breakBtnText.textContent = "Take a Break";
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            }
+        }
+
+        function triggerGlowEffect() {
+            playSoundNotification();
+            const glow = document.getElementById('ambient-glow');
+            glow.style.transform = 'scale(1.8)';
+            setTimeout(() => glow.style.transform = 'scale(1)', 600);
+        }
+
+        // Live Ticker Loop
+        setInterval(() => {
+            if (isClockedIn && !isOnBreak) {
+                secondsElapsed++;
+                updateTimerDisplay();
+            } else if (isOnBreak && breakSecondsLeft > 0) {
+                breakSecondsLeft--;
+                const mins = String(Math.floor(breakSecondsLeft / 60)).padStart(2, '0');
+                const secs = String(breakSecondsLeft % 60).padStart(2, '0');
+                document.getElementById('break-time-left').textContent = `${mins}:${secs} min`;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

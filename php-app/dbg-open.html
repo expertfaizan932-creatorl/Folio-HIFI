@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vacancy - Backend Engineer - Folio</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="/assets/wf.css?v=20261005a" rel="stylesheet">
+<script>
+/* pick the theme before first paint so the page never flashes the wrong colours */
+(function () { try {
+  var t = localStorage.getItem('wf-theme');
+  if (!t) t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+} catch (e) {} })();
+</script>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#7237f5"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Folio"><link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=20261005a"><link rel="apple-touch-icon" href="/icons/icon-192.png?v=20261005a"><script defer src="/js/pwa.js"></script></head>
+<body>
+<button id="pwa-install" type="button" hidden class="btn btn-primary position-fixed bottom-0 end-0 m-3 shadow" style="z-index:1080"><i class="bi bi-download"></i> Install app</button>
+
+<div class="wf-shell">
+
+  <aside class="wf-side" id="wfSide">
+    <div class="wf-brand">
+      <img src="/icons/websitelogo.png?v=20261005a" alt="Folio">
+      <div class="wf-brand-txt">
+        <div class="wf-brand-name">Folio</div>
+        <div class="wf-brand-sub">Monitoring Suite</div>
+      </div>
+      <button type="button" class="wf-icon-btn wf-side-close" data-side-close aria-label="Close navigation"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <nav class="wf-nav">
+            <div class="wf-nav-label">Workspace</div>
+            <a class="wf-link " href="/dashboard" title="Dashboard">
+        <span class="wf-ico"><i class="bi bi-grid-1x2-fill"></i></span><span class="lbl">Dashboard</span>
+      </a>
+                  <div class="wf-nav-label">Manage</div>
+            <a class="wf-link " href="/employees" title="Employees">
+        <span class="wf-ico"><i class="bi bi-people-fill"></i></span><span class="lbl">Employees</span>
+      </a>
+            <a class="wf-link " href="/monitor" title="Live Monitor">
+        <span class="wf-ico"><i class="bi bi-broadcast-pin"></i></span><span class="lbl">Live Monitor</span>
+      </a>
+            <a class="wf-link " href="/portal/history" title="History / Reports">
+        <span class="wf-ico"><i class="bi bi-calendar3"></i></span><span class="lbl">History / Reports</span>
+      </a>
+            <a class="wf-link " href="/employee-form" title="Employee Form">
+        <span class="wf-ico"><i class="bi bi-file-earmark-person-fill"></i></span><span class="lbl">Employee Form</span>
+      </a>
+            <a class="wf-link " href="/admin/usage" title="Activity Report">
+        <span class="wf-ico"><i class="bi bi-graph-up-arrow"></i></span><span class="lbl">Activity Report</span>
+      </a>
+            <a class="wf-link " href="/admin/agent-config" title="Agent Settings">
+        <span class="wf-ico"><i class="bi bi-sliders"></i></span><span class="lbl">Agent Settings</span>
+      </a>
+                  <div class="wf-nav-label">HR</div>
+            <a class="wf-link " href="/hr" title="HR Dashboard">
+        <span class="wf-ico"><i class="bi bi-speedometer2"></i></span><span class="lbl">HR Dashboard</span>
+      </a>
+            <a class="wf-link " href="/hr/org" title="Branches &amp; Departments">
+        <span class="wf-ico"><i class="bi bi-diagram-3"></i></span><span class="lbl">Branches &amp; Departments</span>
+      </a>
+            <a class="wf-link " href="/hr/employees" title="Employees">
+        <span class="wf-ico"><i class="bi bi-person-vcard"></i></span><span class="lbl">Employees</span>
+      </a>
+            <a class="wf-link active" href="/hr/recruitment" title="Recruitment">
+        <span class="wf-ico"><i class="bi bi-briefcase"></i></span><span class="lbl">Recruitment</span>
+      </a>
+            <a class="wf-link " href="/hr/onboarding" title="Onboarding">
+        <span class="wf-ico"><i class="bi bi-person-plus"></i></span><span class="lbl">Onboarding</span>
+      </a>
+            <a class="wf-link " href="/hr/attendance" title="Attendance">
+        <span class="wf-ico"><i class="bi bi-calendar-check"></i></span><span class="lbl">Attendance</span>
+      </a>
+            <a class="wf-link " href="/hr/leave" title="Leave">
+        <span class="wf-ico"><i class="bi bi-calendar2-x"></i></span><span class="lbl">Leave</span>
+      </a>
+            <a class="wf-link " href="/hr/documents" title="Documents">
+        <span class="wf-ico"><i class="bi bi-folder2-open"></i></span><span class="lbl">Documents</span>
+      </a>
+            <a class="wf-link " href="/hr/performance" title="Performance">
+        <span class="wf-ico"><i class="bi bi-graph-up-arrow"></i></span><span class="lbl">Performance</span>
+      </a>
+            <a class="wf-link " href="/hr/tasks" title="Tasks &amp; Work">
+        <span class="wf-ico"><i class="bi bi-list-task"></i></span><span class="lbl">Tasks &amp; Work</span>
+      </a>
+            <a class="wf-link " href="/hr/payroll" title="Payroll">
+        <span class="wf-ico"><i class="bi bi-cash-stack"></i></span><span class="lbl">Payroll</span>
+      </a>
+            <a class="wf-link " href="/hr/assets" title="Assets">
+        <span class="wf-ico"><i class="bi bi-box-seam"></i></span><span class="lbl">Assets</span>
+      </a>
+            <a class="wf-link " href="/hr/offboarding" title="Offboarding">
+        <span class="wf-ico"><i class="bi bi-person-dash"></i></span><span class="lbl">Offboarding</span>
+      </a>
+            <a class="wf-link " href="/hr/reports" title="Reports &amp; Analytics">
+        <span class="wf-ico"><i class="bi bi-clipboard-data"></i></span><span class="lbl">Reports &amp; Analytics</span>
+      </a>
+            <a class="wf-link " href="/hr/approvals" title="Approvals">
+        <span class="wf-ico"><i class="bi bi-check2-square"></i></span><span class="lbl">Approvals</span>
+      </a>
+            <a class="wf-link " href="/hr/announcements" title="Announcements">
+        <span class="wf-ico"><i class="bi bi-megaphone"></i></span><span class="lbl">Announcements</span>
+      </a>
+            <a class="wf-link " href="/hr/notifications" title="Notifications">
+        <span class="wf-ico"><i class="bi bi-bell"></i></span><span class="lbl">Notifications</span>
+      </a>
+            <a class="wf-link " href="/hr/settings" title="HR Settings">
+        <span class="wf-ico"><i class="bi bi-gear"></i></span><span class="lbl">HR Settings</span>
+      </a>
+                  <div class="wf-nav-label">Administration</div>
+            <a class="wf-link " href="/portal/users" title="Credentials">
+        <span class="wf-ico"><i class="bi bi-key-fill"></i></span><span class="lbl">Credentials</span>
+      </a>
+            <a class="wf-link " href="/admin/activity" title="Activity Tracker">
+        <span class="wf-ico"><i class="bi bi-eye-fill"></i></span><span class="lbl">Activity Tracker</span>
+      </a>
+            <a class="wf-link " href="/admin/backups" title="Database Backup">
+        <span class="wf-ico"><i class="bi bi-database-down"></i></span><span class="lbl">Database Backup</span>
+      </a>
+                  <div class="wf-nav-label">Personal</div>
+            <a class="wf-link " href="/time" title="My Time">
+        <span class="wf-ico"><i class="bi bi-clock-fill"></i></span><span class="lbl">My Time</span>
+      </a>
+            <a class="wf-link " href="/hr/me" title="My HR">
+        <span class="wf-ico"><i class="bi bi-person-vcard"></i></span><span class="lbl">My HR</span>
+      </a>
+            <a class="wf-link " href="/profile" title="My Profile">
+        <span class="wf-ico"><i class="bi bi-person-badge-fill"></i></span><span class="lbl">My Profile</span>
+      </a>
+                </nav>
+
+    <div class="wf-side-foot">
+      <div class="wf-user">
+        <div class="wf-avatar">AR</div>
+        <div class="wf-user-txt" style="min-width:0">
+          <div class="wf-user-name">Admin Root</div>
+          <div class="wf-user-role">ADMIN</div>
+        </div>
+      </div>
+      <a class="btn btn-outline-secondary w-100" href="/logout"><i class="bi bi-box-arrow-right"></i><span>Sign out</span></a>
+    </div>
+  </aside>
+
+  <div class="wf-backdrop" data-side-close></div>
+
+  <div class="wf-body">
+    <header class="wf-top">
+      <button type="button" class="wf-icon-btn wf-burger" data-side-toggle aria-label="Toggle navigation"><i class="bi bi-list"></i></button>
+      <button type="button" class="wf-icon-btn wf-rail" data-side-toggle aria-label="Collapse menu" title="Collapse / expand menu"><i class="bi bi-layout-sidebar-inset"></i></button>
+      <div class="wf-top-title">
+        <h1>Vacancy - Backend Engineer</h1>
+        <div class="wf-crumb">Folio</div>
+      </div>
+      <div class="wf-top-right">
+        <div class="wf-chip" title="Office time Asia/Karachi (12-hour)">
+          <i class="bi bi-clock-history"></i>
+                    <span id="wf-clock-time" data-wf-now="1791986963" data-wf-tz="Asia/Karachi">--:--:--</span>
+          <span class="text-soft d-none d-xl-inline" id="wf-clock-date"></span>
+        </div>
+        <button type="button" class="wf-icon-btn" data-theme-toggle title="Switch theme"><i class="bi bi-sun"></i></button>
+        <div class="wf-chip wf-chip-user">
+          <i class="bi bi-person-circle"></i>
+          <span class="lbl-user">Admin Root</span>
+          <span class="wf-role">ADMIN</span>
+        </div>
+        <a class="wf-icon-btn wf-signout" href="/logout" title="Sign out"><i class="bi bi-box-arrow-right"></i></a>
+      </div>
+    </header>
+
+    <main class="wf-main wf-in">
+<div class="alert alert-success py-2" data-flash><i class="bi bi-check-circle me-1"></i>Vacancy status updated.</div><ul class="nav nav-pills flex-wrap gap-1 mb-3"><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/org"><i class="bi bi-diagram-3 me-1"></i>Branches &amp; Departments</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/employees"><i class="bi bi-person-vcard me-1"></i>Employees</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small active" href="/hr/recruitment"><i class="bi bi-briefcase me-1"></i>Recruitment</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/onboarding"><i class="bi bi-person-plus me-1"></i>Onboarding</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/attendance"><i class="bi bi-calendar-check me-1"></i>Attendance</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/leave"><i class="bi bi-calendar2-x me-1"></i>Leave</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/documents"><i class="bi bi-folder2-open me-1"></i>Documents</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/performance"><i class="bi bi-graph-up-arrow me-1"></i>Performance</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/tasks"><i class="bi bi-list-task me-1"></i>Tasks</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/payroll"><i class="bi bi-cash-stack me-1"></i>Payroll</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/assets"><i class="bi bi-box-seam me-1"></i>Assets</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/offboarding"><i class="bi bi-person-dash me-1"></i>Offboarding</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/reports"><i class="bi bi-clipboard-data me-1"></i>Reports</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/approvals"><i class="bi bi-check2-square me-1"></i>Approvals</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/announcements"><i class="bi bi-megaphone me-1"></i>Announcements</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/notifications"><i class="bi bi-bell me-1"></i>Notifications</a></li><li class="nav-item"><a class="nav-link py-1 px-2 small " href="/hr/settings"><i class="bi bi-gear me-1"></i>Settings</a></li></ul><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h4 class="mb-0">Backend Engineer</h4>
+    <div class="small text-muted">
+      -      &middot; -      &middot; 2 opening(s)
+    </div>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    <span class="badge bg-dark">Closed</span>    <form method="post" action="/hr/recruitment/opening/status" class="d-flex gap-1">
+      <input type="hidden" name="_csrf" value="5b548b781a9a284fffd7ee51a836b44d"><input type="hidden" name="id" value="1">
+      <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+        <option value="DRAFT" >Draft</option><option value="OPEN" >Open</option><option value="ON_HOLD" >On Hold</option><option value="CLOSED" selected>Closed</option>      </select>
+    </form>
+    <a class="btn btn-sm btn-outline-secondary" href="/hr/recruitment/openings">Back</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-5">
+    <div class="card p-3 h-100">
+      <div class="sec-title mb-2">Details</div>
+      <div class="small"><span class="text-muted">Type:</span> Permanent</div>
+      <div class="small"><span class="text-muted">Location:</span> Lahore</div>
+      <div class="small"><span class="text-muted">Salary:</span> 100000 - 150000</div>
+      <div class="small"><span class="text-muted">Hiring Manager:</span> </div>
+      <div class="small"><span class="text-muted">Posted:</span>  &middot; <span class="text-muted">Closing:</span> </div>
+                </div>
+  </div>
+  <div class="col-12 col-lg-7">
+    <div class="card p-3 h-100">
+      <div class="sec-title mb-2">Applicants (1)</div>
+              <table class="table table-sm align-middle mb-0">
+          <thead class="table-light"><tr><th>Candidate</th><th>Stage</th><th>Applied</th><th></th></tr></thead>
+          <tbody>
+                      <tr>
+              <td class="small"><div class="fw-semibold">Bilal Ahmed</div><div class="text-muted">bilal@folio.test</div></td>
+              <td><span class="badge bg-secondary">Interview</span></td>
+              <td class="small text-muted">14 Oct</td>
+              <td class="text-end"><a class="small" href="/hr/recruitment/candidates/1">Open</a></td>
+            </tr>
+                    </tbody>
+        </table>
+          </div>
+  </div>
+</div>
+        </main>
+  </div>
+</div>
+<div class="wf-toasts"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/wf.js?v=20261005a"></script>
+</body>
+</html>

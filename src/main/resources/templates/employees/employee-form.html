@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folio - Employee Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f4f6fb; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+    </style>
+    <th:block th:insert="~{fragments/pwa :: pwaHead}"></th:block>
+</head>
+<body class="bg-light">
+<div class="container py-4" style="max-width: 760px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-person-badge me-2"></i>
+            <span th:text="${mode == 'new' ? 'Add New Employee' : 'Edit Employee'}">Form</span>
+        </h4>
+        <a th:href="@{/employees}" class="btn btn-light border"><i class="bi bi-arrow-left me-1"></i>Back</a>
+    </div>
+    <div class="card p-4">
+        <form th:action="@{${mode == 'new'} ? '/employees/save' : '/employees/update'}" th:object="${employee}" method="post">
+            <input type="hidden" th:field="*{id}" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" th:field="*{firstName}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" th:field="*{lastName}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" th:field="*{email}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" th:field="*{phone}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" th:field="*{department}">
+                        <option value="">Select department</option>
+                        <option th:value="Engineering">Engineering</option>
+                        <option th:value="'Human Resources'">Human Resources</option>
+                        <option th:value="Finance">Finance</option>
+                        <option th:value="Marketing">Marketing</option>
+                        <option th:value="Sales">Sales</option>
+                        <option th:value="Administration">Administration</option>
+                        <option th:value="Support">Support</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Designation</label>
+                    <input type="text" class="form-control" th:field="*{designation}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Salary (₹)</label>
+                    <input type="number" step="0.01" class="form-control" th:field="*{salary}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Join Date</label>
+                    <input type="date" class="form-control" th:field="*{joinDate}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" th:field="*{address}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" th:field="*{role}">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}">ROLE</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Password <span class="text-muted small">(<span th:text="${mode == 'new' ? 'required' : 'leave blank to keep current'}">)</span></span></label>
+                    <input type="password" class="form-control" th:field="*{password}" th:required="${mode == 'new'} ? 'required' : null">
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4" th:text="${mode == 'new' ? 'Create Employee' : 'Save Changes'}">Save</button>
+                <a th:href="@{/employees}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

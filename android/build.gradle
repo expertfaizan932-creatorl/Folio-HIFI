@@ -1,0 +1,23 @@
+// Folio Manager - Android app for WorkFolio.
+// Framework-only (no AndroidX / no third-party libraries), so the build needs
+// nothing beyond the Android Gradle Plugin and the SDK already on the machine.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}
